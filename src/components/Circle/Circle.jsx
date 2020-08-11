@@ -3,17 +3,24 @@ import PropTypes from 'prop-types'
 import './Circle.scss'
 
 const Circle = ({
-    color,
-    selected
+    id,
+    selected,
+    onDragStart,
+    x,
+    y
 }) => {
+    
     return (
-        <div className="circle">       
+        <div
+            // onDragStart={ e => onDragStart(e, id || 1) || null }
+            draggable
+            className="circle">
+            
         </div>
     )
 }
 
 Circle.propTypes = {
-    color: PropTypes.string.isRequired,
     selected: PropTypes.bool,
 }
 

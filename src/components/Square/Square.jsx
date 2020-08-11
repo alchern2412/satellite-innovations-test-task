@@ -1,19 +1,20 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import './Square'
+import './Square.scss'
 
 const Square = ({
-    color,
     selected
 }) => {
     return (
-        <div className="square"> 
+        <div
+            draggable
+            className="square"
+        >
         </div>
     )
 }
 
 Square.propTypes = {
-    color: PropTypes.string.isRequired,
     selected: PropTypes.bool,
 }
 
