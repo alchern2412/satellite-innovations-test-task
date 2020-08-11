@@ -3,11 +3,13 @@ import PropTypes from 'prop-types'
 import './Square.scss'
 
 const Square = ({
-    selected
+    selected,
+    onDragStart
 }) => {
     return (
         <div
             draggable
+            onDragStart={e => onDragStart(e, 'square')}
             className="square"
         >
         </div>

@@ -12,7 +12,7 @@ const Circle = ({
     
     return (
         <div
-            // onDragStart={ e => onDragStart(e, id || 1) || null }
+            onDragStart={ e => onDragStart(e, 'circle') }
             draggable
             className="circle">
             

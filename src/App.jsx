@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import './App.scss';
 import Circle from './components/Circle/Circle';
 import Square from './components/Square/Square';
@@ -8,21 +9,25 @@ const App = () => {
   // { id: '', type: 'circle', position: }
   const [figures, setFigures] = useState([
     {
+      id: uuidv4(),
       x: 0,
       y: 0,
       type: 'rect'
     },
     {
+      id: uuidv4(),
       x: 100,
       y: 0,
       type: 'rect'
     },
     {
+      id: uuidv4(),
       x: 0,
       y: 100,
-      type: 'rect'
+      type: 'circle'
     },
     {
+      id: uuidv4(),
       x: 100,
       y: 100,
       type: 'rect'
@@ -32,6 +37,10 @@ const App = () => {
   const [mouse, setMouse] = useState({})
 
   const [selected, setSelected] = useState(false)
+
+  const onDragStart = (e, type) => {
+    e.dataTransfer.setData("type", type);
+  }
 
   const onMouseMove = e => {
     // console.log('x', e.pageX)
@@ -47,7 +56,7 @@ const App = () => {
     if (selected && mouse.down) {
       setFigures(figures.map(figure => {
         if (figure === selected) {
-          figure.x = mouse.x - 80 / 2
+          figure.x =  mouse.x - 80 / 2
           figure.y = mouse.y - 50 / 2
         }
         return figure
@@ -60,14 +69,15 @@ const App = () => {
     setMouse(prevMouse => ({ ...prevMouse, down: true }))
     figures.forEach(figure => {
       if (isCursorInFigure(mouse.x, mouse.y, figure)) {
-        console.log('selected figure', figure)
+        // console.log('selected figure', figure)
         setSelected(figure)
+        setFigures(prevFigures => ([...prevFigures, figure]))
         isCursorOnAnyFigure = true;
       }
     })
 
-    if(!isCursorOnAnyFigure) {
-      setSelected({})
+    if (!isCursorOnAnyFigure) {
+      setSelected(false)
     }
 
   }
@@ -81,15 +91,6 @@ const App = () => {
       && y > figure.y && y < figure.y + 50
   }
 
-  // const onClick = e => {
-  //   figures.forEach(figure => {
-  //     if (isCursorInFigure(mouse.x, mouse.y, figure)) {
-  //       console.log('selected figure', figure)
-  //       setSelected(figure)
-  //     }
-  //   })
-  // }
-
   const onDragOver = e => {
     e.preventDefault()
     const x = e.pageX - canvasRef.current.offsetLeft
@@ -99,18 +100,20 @@ const App = () => {
       x,
       y,
     }))
-    // console.log(e)
-
   }
 
   const onDrop = e => {
-    console.log(e)
+    let type = e.dataTransfer.getData("type");
+    // console.log(e)
     const draggedFigure = {
+      id: uuidv4(),
       x: mouse.x - 80 / 2,
-      y: mouse.y - 50 / 2
+      y: mouse.y - 50 / 2,
+      type
     }
+    console.log('dropped', draggedFigure)
     setFigures(prevFigures => {
-      console.log('prevFigures', prevFigures)
+      // console.log('prevFigures', prevFigures)
       return ([...prevFigures, draggedFigure])
     })
     setSelected(draggedFigure)
@@ -118,25 +121,40 @@ const App = () => {
 
   const drawFigure = (figure) => {
     const ctx = canvasRef.current.getContext('2d')
-    ctx.fillStyle = '#0F0'
+    // ctx.beginPath();
+
     ctx.lineWidth = 1;
-    ctx.fillRect(figure.x, figure.y, 80, 50)
     if (figure === selected) {
       ctx.lineWidth = 4
     }
     // 
     ctx.strokeStyle = '#000'
     ctx.stroke()
-    ctx.strokeRect(figure.x, figure.y, 80, 50)
+    switch (figure.type) {
+      case 'rect':
+        ctx.fillStyle = '#0F0'
+        ctx.fillRect(figure.x, figure.y, 80, 50)
+        ctx.strokeRect(figure.x, figure.y, 80, 50)
+        break
+      case 'circle':
+        ctx.fillStyle = '#00F'
+        ctx.ellipse(figure.x + 80/2, figure.y + 50/2, 40, 25, 0, 0, 2 * Math.PI)
+        ctx.fill()
+        ctx.stroke();
+        ctx.beginPath();
+        break
+    }
 
   }
 
   useEffect(() => {
     const ctx = canvasRef.current.getContext('2d')
     ctx.clearRect(0, 0, 848, 615)
+    ctx.beginPath();
     figures.forEach(figure => {
       drawFigure(figure)
     })
+
   }, [selected, figures, mouse])
 
   return (
@@ -153,10 +171,10 @@ const App = () => {
         <div className="table__body">
           <div className="table__body-item figures">
             <div className="figures__figure">
-              <Circle /* onDragStart={ onDragStart } */ />
+              <Circle onDragStart={ onDragStart } />
             </div>
             <div className="figures__figure">
-              <Square />
+              <Square onDragStart={ onDragStart } />
             </div>
 
           </div>
@@ -170,7 +188,6 @@ const App = () => {
               onMouseUp={ onMouseUp }
               // onClick={ onClick }
               onDragOver={ onDragOver }
-              // onMouseUp= { onMouseOver}
               onDrop={ onDrop }
               ref={ canvasRef }
               className="canvas"
