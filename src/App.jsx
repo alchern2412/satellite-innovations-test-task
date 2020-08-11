@@ -35,6 +35,7 @@ const App = () => {
 
   const onMouseMove = e => {
     // console.log('x', e.pageX)
+
     const x = e.pageX - canvasRef.current.offsetLeft
     const y = e.pageY - canvasRef.current.offsetTop
     setMouse(prevMouse => ({
@@ -46,8 +47,8 @@ const App = () => {
     if (selected && mouse.down) {
       setFigures(figures.map(figure => {
         if (figure === selected) {
-          figure.x = mouse.x
-          figure.y = mouse.y
+          figure.x = mouse.x - 80 / 2
+          figure.y = mouse.y - 50 / 2
         }
         return figure
       }))
@@ -55,16 +56,22 @@ const App = () => {
   }
 
   const onMouseDown = e => {
+    let isCursorOnAnyFigure = false
     setMouse(prevMouse => ({ ...prevMouse, down: true }))
     figures.forEach(figure => {
       if (isCursorInFigure(mouse.x, mouse.y, figure)) {
         console.log('selected figure', figure)
         setSelected(figure)
+        isCursorOnAnyFigure = true;
       }
     })
 
+    if(!isCursorOnAnyFigure) {
+      setSelected({})
+    }
 
   }
+
   const onMouseUp = e => {
     setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
@@ -83,9 +90,30 @@ const App = () => {
   //   })
   // }
 
-  const onDragStart = e => {
-    console.log(e)
+  const onDragOver = e => {
+    e.preventDefault()
+    const x = e.pageX - canvasRef.current.offsetLeft
+    const y = e.pageY - canvasRef.current.offsetTop
+    setMouse(prevMouse => ({
+      ...prevMouse,
+      x,
+      y,
+    }))
+    // console.log(e)
 
+  }
+
+  const onDrop = e => {
+    console.log(e)
+    const draggedFigure = {
+      x: mouse.x - 80 / 2,
+      y: mouse.y - 50 / 2
+    }
+    setFigures(prevFigures => {
+      console.log('prevFigures', prevFigures)
+      return ([...prevFigures, draggedFigure])
+    })
+    setSelected(draggedFigure)
   }
 
   const drawFigure = (figure) => {
@@ -132,7 +160,8 @@ const App = () => {
             </div>
 
           </div>
-          <div className="table__body-item">
+          <div
+            className="table__body-item">
             <canvas
               width="848px"
               height="615px"
@@ -140,8 +169,9 @@ const App = () => {
               onMouseDown={ onMouseDown }
               onMouseUp={ onMouseUp }
               // onClick={ onClick }
-              onDragStart={ onDragStart }
+              onDragOver={ onDragOver }
               // onMouseUp= { onMouseOver}
+              onDrop={ onDrop }
               ref={ canvasRef }
               className="canvas"
             ></canvas>
