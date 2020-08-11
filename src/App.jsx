@@ -37,35 +37,54 @@ const App = () => {
     // console.log('x', e.pageX)
     const x = e.pageX - canvasRef.current.offsetLeft
     const y = e.pageY - canvasRef.current.offsetTop
-    setMouse({
+    setMouse(prevMouse => ({
+      ...prevMouse,
       x,
       y,
-    })
+    }))
+
+    if (selected && mouse.down) {
+      setFigures(figures.map(figure => {
+        if (figure === selected) {
+          figure.x = mouse.x
+          figure.y = mouse.y
+        }
+        return figure
+      }))
+    }
   }
 
-  const isCursorInFigure = (x, y, figure) => {
-    // console.log('figure x')
-    return x > figure.x && x < figure.x + 80
-      && y > figure.y && y < figure.y + 50
-  }
-
-  const onClick = e => {
-    // console.log(e)
-    // const x = e.pageX - canvasRef.current.offsetLeft
-    // const y = e.pageY - canvasRef.current.offsetTop
-    // console.log('x', x)
-    // console.log('y', y)
-    // // console.log('fx', figures[0].x)
-    // // console.log('fy', figures[0].y)
+  const onMouseDown = e => {
+    setMouse(prevMouse => ({ ...prevMouse, down: true }))
     figures.forEach(figure => {
       if (isCursorInFigure(mouse.x, mouse.y, figure)) {
         console.log('selected figure', figure)
         setSelected(figure)
       }
     })
+
+
+  }
+  const onMouseUp = e => {
+    setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
 
+  const isCursorInFigure = (x, y, figure) => {
+    return x > figure.x && x < figure.x + 80
+      && y > figure.y && y < figure.y + 50
+  }
+
+  // const onClick = e => {
+  //   figures.forEach(figure => {
+  //     if (isCursorInFigure(mouse.x, mouse.y, figure)) {
+  //       console.log('selected figure', figure)
+  //       setSelected(figure)
+  //     }
+  //   })
+  // }
+
   const onDragStart = e => {
+    console.log(e)
 
   }
 
@@ -90,7 +109,7 @@ const App = () => {
     figures.forEach(figure => {
       drawFigure(figure)
     })
-  }, [selected])
+  }, [selected, figures, mouse])
 
   return (
     <div className="content">
@@ -118,7 +137,9 @@ const App = () => {
               width="848px"
               height="615px"
               onMouseMove={ onMouseMove }
-              onClick={ onClick }
+              onMouseDown={ onMouseDown }
+              onMouseUp={ onMouseUp }
+              // onClick={ onClick }
               onDragStart={ onDragStart }
               // onMouseUp= { onMouseOver}
               ref={ canvasRef }
