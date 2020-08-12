@@ -9,7 +9,7 @@ const Square = ({
     return (
         <div
             draggable
-            onDragStart={e => onDragStart(e, 'square')}
+            onDragStart={e => onDragStart(e, 'rect')}
             className="square"
         >
         </div>

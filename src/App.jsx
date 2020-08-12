@@ -6,6 +6,7 @@ import Square from './components/Square/Square';
 
 const App = () => {
   const canvasRef = useRef(null)
+  const circleRef = useRef(null)
   // { id: '', type: 'circle', position: }
   const [figures, setFigures] = useState([
     {
@@ -39,7 +40,13 @@ const App = () => {
   const [selected, setSelected] = useState(false)
 
   const onDragStart = (e, type) => {
+    console.log(e)
     e.dataTransfer.setData("type", type);
+  }
+
+  const onDrag = e => {
+    // e.preventDefault()
+    console.log('onDrag', e)
   }
 
   const onMouseMove = e => {
@@ -56,7 +63,7 @@ const App = () => {
     if (selected && mouse.down) {
       setFigures(figures.map(figure => {
         if (figure === selected) {
-          figure.x =  mouse.x - 80 / 2
+          figure.x = mouse.x - 80 / 2
           figure.y = mouse.y - 50 / 2
         }
         return figure
@@ -65,6 +72,7 @@ const App = () => {
   }
 
   const onMouseDown = e => {
+    e.stopPropagation()
     let isCursorOnAnyFigure = false
     setMouse(prevMouse => ({ ...prevMouse, down: true }))
     figures.forEach(figure => {
@@ -82,8 +90,21 @@ const App = () => {
 
   }
 
+  const onMouseDownContent = e => {
+    console.log('onMouseDownContent')
+  }
+
   const onMouseUp = e => {
+    console.log('onMouseUp')
     setMouse(prevMouse => ({ ...prevMouse, down: false }))
+  }
+
+  const onMouseUpContent = e => {
+    console.log('onMouseUpContent')
+    if (selected && mouse.down) {
+      setSelected(false)
+    }
+    // setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
 
   const isCursorInFigure = (x, y, figure) => {
@@ -100,6 +121,14 @@ const App = () => {
       x,
       y,
     }))
+  }
+
+  const onMouseOver = e => {
+    if (selected && mouse.down) {
+      setFigures(prevFigures => {
+        return ([...prevFigures, selected])
+      })
+    }
   }
 
   const onDrop = e => {
@@ -119,6 +148,33 @@ const App = () => {
     setSelected(draggedFigure)
   }
 
+  const onMouseOut = e => {
+    if (mouse.down && selected) {
+      setFigures(prevFigures => (prevFigures.filter(figure => figure !== selected)))
+      
+      // circleRef.current.drag()
+
+      // const event = document.createEvent("CustomEvent");
+      // event.initCustomEvent("dragstart", true, true, null);
+      // event.clientX = circleRef.current.top;
+      // event.clientY = circleRef.current.left;
+      // circleRef.current.dispatchEvent(event);
+
+      // const dataTransfer = new DataTransfer;
+      // dataTransfer.setData("type", 'circle');
+      // circleRef.current.dispatchEvent(new DragEvent('dragstart', { dataTransfer: dataTransfer }));
+
+      // const event = document.createEvent('MouseEvents')
+      // event.initEvent('dragstart', true, false)
+      // circleRef.current.dispatchEvent(event)
+
+    }
+  }
+
+  const onClick = e => {
+    console.log('onClick')
+  }
+
   const drawFigure = (figure) => {
     const ctx = canvasRef.current.getContext('2d')
     // ctx.beginPath();
@@ -129,16 +185,17 @@ const App = () => {
     }
     // 
     ctx.strokeStyle = '#000'
-    ctx.stroke()
+
     switch (figure.type) {
       case 'rect':
         ctx.fillStyle = '#0F0'
         ctx.fillRect(figure.x, figure.y, 80, 50)
         ctx.strokeRect(figure.x, figure.y, 80, 50)
+        ctx.stroke()
         break
       case 'circle':
         ctx.fillStyle = '#00F'
-        ctx.ellipse(figure.x + 80/2, figure.y + 50/2, 40, 25, 0, 0, 2 * Math.PI)
+        ctx.ellipse(figure.x + 80 / 2, figure.y + 50 / 2, 40, 25, 0, 0, 2 * Math.PI)
         ctx.fill()
         ctx.stroke();
         ctx.beginPath();
@@ -158,7 +215,7 @@ const App = () => {
   }, [selected, figures, mouse])
 
   return (
-    <div className="content">
+    <div className="content" onMouseDown={onMouseDownContent} onMouseUp={onMouseUpContent}>
       <div className="table">
         <div className="table__header">
           <div className="table__header-item">
@@ -171,7 +228,17 @@ const App = () => {
         <div className="table__body">
           <div className="table__body-item figures">
             <div className="figures__figure">
-              <Circle onDragStart={ onDragStart } />
+              {/* <Circle onDragStart={ onDragStart } /> */ }
+              <div
+                onDragStart={ e => onDragStart(e, 'circle') }
+                onDrag={ onDrag }
+                draggable
+                className="circle"
+                ref={ circleRef }
+                onClick={ onClick }
+              >
+
+              </div>
             </div>
             <div className="figures__figure">
               <Square onDragStart={ onDragStart } />
@@ -186,8 +253,11 @@ const App = () => {
               onMouseMove={ onMouseMove }
               onMouseDown={ onMouseDown }
               onMouseUp={ onMouseUp }
+              onMouseOut={ onMouseOut }
+              onMouseOver={ onMouseOver }
               // onClick={ onClick }
               onDragOver={ onDragOver }
+              // onDrag={ onDragOver }
               onDrop={ onDrop }
               ref={ canvasRef }
               className="canvas"
