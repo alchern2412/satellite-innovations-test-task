@@ -1,23 +1,22 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import './Square.scss'
+import './Rect.scss'
 
-const Square = ({
-    selected,
+const Rect = ({
     onDragStart
 }) => {
     return (
         <div
             draggable
-            onDragStart={e => onDragStart(e, 'rect')}
-            className="square"
+            onDragStart={ e => onDragStart(e, 'rect') }
+            className="rect"
         >
         </div>
     )
 }
 
-Square.propTypes = {
+Rect.propTypes = {
     selected: PropTypes.bool,
 }
 
-export default Square
+export default Rect

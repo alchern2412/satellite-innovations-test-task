@@ -1,11 +1,7 @@
-.circle {
-    // position: absolute;
+.ellipse {
     width: 80px;
     height: 50px;
     border: 1px solid #000;
     border-radius: 50%;
     background: #00f;
-    &.selected {
-        border: 2px solid #f00;
-    }
 }
