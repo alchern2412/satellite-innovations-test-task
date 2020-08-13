@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import './App.scss';
 import Circle from './components/Circle/Circle';
 import Square from './components/Square/Square';
@@ -10,25 +9,21 @@ const App = () => {
   const rectRef = useRef(null)
   const [figures, setFigures] = useState([
     {
-      id: uuidv4(),
       x: 0,
       y: 0,
       type: 'rect'
     },
     {
-      id: uuidv4(),
       x: 100,
       y: 0,
       type: 'rect'
     },
     {
-      id: uuidv4(),
       x: 0,
       y: 100,
       type: 'circle'
     },
     {
-      id: uuidv4(),
       x: 100,
       y: 100,
       type: 'rect'
@@ -47,8 +42,6 @@ const App = () => {
   }
 
   const onMouseMoveContent = (e) => {
-    // console.log('mouse.Out', mouse.out)
-    // console.log('selected', selected)
     if (mouse.out && selected && !isCursorInCanvas(e.pageX, e.pageY)) {
       switch (selected.type) {
         case 'circle':
@@ -70,27 +63,13 @@ const App = () => {
 
   }
 
-  const onKeyPressContent = (e) => {
-    console.log(e.key)
-    if (e.key === 'Delete' && selected) {
-      setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
-      setSelected(false)
-    }
-  }
-
   const onDragStart = (e, type) => {
     console.log(e)
     e.dataTransfer.setData("type", type);
   }
 
-  const onDrag = e => {
-    // e.preventDefault()
-    console.log('onDrag', e)
-  }
-
   const onMouseMove = e => {
     e.stopPropagation()
-    // console.log('x', e.pageX)
 
     const x = e.pageX - canvasRef.current.offsetLeft
     const y = e.pageY - canvasRef.current.offsetTop
@@ -131,22 +110,19 @@ const App = () => {
 
   }
 
-  const onMouseDownContent = e => {
-    console.log('onMouseDownContent')
-  }
-
   const onMouseUp = e => {
     e.stopPropagation()
-    console.log('onMouseUp')
     setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
 
   const onMouseUpContent = e => {
-    console.log('onMouseUpContent')
     if (selected && mouse.down) {
       setSelected(false)
+      setMouse(prevMouse => ({
+        ...prevMouse,
+        down: false
+      }))
     }
-    // setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
 
   const isCursorInFigure = (x, y, figure) => {
@@ -162,12 +138,10 @@ const App = () => {
       ...prevMouse,
       x,
       y,
-      // out: false
     }))
   }
 
   const onMouseOver = e => {
-    console.log('onMouseOver')
     e.stopPropagation()
     if (selected && mouse.down) {
       setFigures(prevFigures => {
@@ -177,22 +151,17 @@ const App = () => {
         ...prevMouse,
         out: false
       }))
-
     }
   }
 
   const onDrop = e => {
     let type = e.dataTransfer.getData("type");
-    // console.log(e)
     const draggedFigure = {
-      id: uuidv4(),
       x: mouse.x - 80 / 2,
       y: mouse.y - 50 / 2,
       type
     }
-    console.log('dropped', draggedFigure)
     setFigures(prevFigures => {
-      // console.log('prevFigures', prevFigures)
       return ([...prevFigures, draggedFigure])
     })
     setSelected(draggedFigure)
@@ -206,23 +175,15 @@ const App = () => {
         ...prevMouse,
         out: true
       }))
-
     }
-  }
-
-  const onClick = e => {
-    console.log('onClick')
   }
 
   const drawFigure = (figure) => {
     const ctx = canvasRef.current.getContext('2d')
-    // ctx.beginPath();
-
     ctx.lineWidth = 1;
     if (figure === selected) {
       ctx.lineWidth = 4
     }
-    // 
     ctx.strokeStyle = '#000'
 
     switch (figure.type) {
@@ -261,7 +222,11 @@ const App = () => {
   }, [selected, figures, mouse])
 
   return (
-    <div className="content" onMouseDown={ onMouseDownContent } onMouseUp={ onMouseUpContent } onMouseMove={ onMouseMoveContent }>
+    <div
+      className="content"
+      onMouseUp={ onMouseUpContent }
+      onMouseMove={ onMouseMoveContent }
+    >
       <div
         ref={ circleRef }
         className={ `circle drag-out ${mouse.out && selected.type === 'circle' ? 'active' : ''}` }
@@ -282,16 +247,11 @@ const App = () => {
         <div className="table__body">
           <div className="table__body-item figures">
             <div className="figures__figure">
-              {/* <Circle onDragStart={ onDragStart } /> */ }
               <div
                 onDragStart={ e => onDragStart(e, 'circle') }
-                onDrag={ onDrag }
                 draggable
                 className="circle"
-
-                onClick={ onClick }
               >
-
               </div>
             </div>
             <div className="figures__figure">
@@ -309,35 +269,11 @@ const App = () => {
               onMouseUp={ onMouseUp }
               onMouseOut={ onMouseOut }
               onMouseOver={ onMouseOver }
-              // onClick={ onClick }
               onDragOver={ onDragOver }
-              // onDrag={ onDragOver }
               onDrop={ onDrop }
               ref={ canvasRef }
               className="canvas"
-            // onKeyDown={onKeyPressContent}
             ></canvas>
-
-
-            {/* <div
-              className="canvas"
-              onDragOver={ e => onDragOver(e) }
-              onDrop={ e => onDrop(e) }
-              // onMouseMove={ onMouseMove }
-              onClick={ onClick }
-            >
-              {
-                figures.map((figure, id) => (
-                  <Circle
-                    x={ figure.x }
-                    y={ figure.y }
-                    id={ id }
-                    onDragStart={ onDragStart }
-                    
-                  />
-                ))
-              }
-            </div> */}
           </div>
         </div>
       </div>
