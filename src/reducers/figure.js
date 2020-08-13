@@ -4,26 +4,11 @@ import {
 
 const initialState = {
     figures: [
-        {
-            x: 0,
-            y: 0,
-            type: 'rect'
-        },
-        {
-            x: 100,
-            y: 0,
-            type: 'rect'
-        },
-        {
-            x: 0,
-            y: 100,
-            type: 'ellipse'
-        },
-        {
-            x: 100,
-            y: 100,
-            type: 'rect'
-        },
+        // {
+        //     x: 100,
+        //     y: 100,
+        //     type: 'rect'
+        // },
     ]
 }
 

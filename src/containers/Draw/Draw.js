@@ -8,8 +8,12 @@ import {
     addFigure,
     setFigures
 } from '../../actions/figure'
+import { TYPE_RECT, TYPE_ELLIPSE } from '../../actions/types';
+import './Draw.scss'
 
 const Draw = ({
+    width,
+    height,
     figures,
     deleteFigure,
     addFigure,
@@ -21,28 +25,6 @@ const Draw = ({
     const canvasRef = useRef(null)
     const ellipseRef = useRef(null)
     const rectRef = useRef(null)
-    // const [figures, setFigures] = useState([
-    //     {
-    //         x: 0,
-    //         y: 0,
-    //         type: 'rect'
-    //     },
-    //     {
-    //         x: 100,
-    //         y: 0,
-    //         type: 'rect'
-    //     },
-    //     {
-    //         x: 0,
-    //         y: 100,
-    //         type: 'ellipse'
-    //     },
-    //     {
-    //         x: 100,
-    //         y: 100,
-    //         type: 'rect'
-    //     },
-    // ])
 
     const [mouse, setMouse] = useState({})
 
@@ -71,8 +53,19 @@ const Draw = ({
                 out: false
             }))
         }
-
     }
+
+    
+    const onMouseUpContent = e => {
+        if (selected && mouse.down) {
+            setSelected(false)
+            setMouse(prevMouse => ({
+                ...prevMouse,
+                down: false
+            }))
+        }
+    }
+
 
     const onDragStart = (e, type) => {
         e.dataTransfer.setData("type", type);
@@ -108,7 +101,6 @@ const Draw = ({
         figures.forEach(figure => {
             if (isCursorInFigure(mouse.x, mouse.y, figure)) {
                 setSelected(figure)
-                // setFigures(prevFigures => ([...prevFigures, figure]))
                 addFigure(figure)
                 isCursorOnAnyFigure = true;
             }
@@ -123,16 +115,6 @@ const Draw = ({
     const onMouseUp = e => {
         e.stopPropagation()
         setMouse(prevMouse => ({ ...prevMouse, down: false }))
-    }
-
-    const onMouseUpContent = e => {
-        if (selected && mouse.down) {
-            setSelected(false)
-            setMouse(prevMouse => ({
-                ...prevMouse,
-                down: false
-            }))
-        }
     }
 
     const isCursorInFigure = (x, y, figure) => {
@@ -154,9 +136,6 @@ const Draw = ({
     const onMouseOver = e => {
         e.stopPropagation()
         if (selected && mouse.down) {
-            // setFigures(prevFigures => {
-            //     return ([...prevFigures, selected])
-            // })
             addFigure(selected)
             setMouse(prevMouse => ({
                 ...prevMouse,
@@ -172,16 +151,12 @@ const Draw = ({
             y: mouse.y - figureHeight / 2,
             type
         }
-        // setFigures(prevFigures => {
-        //     return ([...prevFigures, draggedFigure])
-        // })
         addFigure(draggedFigure)
         setSelected(draggedFigure)
     }
 
     const onMouseOut = e => {
         if (mouse.down && selected) {
-            // setFigures(prevFigures => (prevFigures.filter(figure => figure !== selected)))
             deleteFigure(selected)
             setMouse(prevMouse => ({
                 ...prevMouse,
@@ -198,13 +173,13 @@ const Draw = ({
         context.strokeStyle = '#000'
 
         switch (figure.type) {
-            case 'rect':
+            case TYPE_RECT:
                 context.fillStyle = '#0F0'
                 context.fillRect(figure.x, figure.y, figureWidth, figureHeight)
                 context.strokeRect(figure.x, figure.y, figureWidth, figureHeight)
                 context.stroke()
                 break
-            case 'ellipse':
+            case TYPE_ELLIPSE:
                 context.fillStyle = '#00F'
                 context.ellipse(
                     figure.x + figureWidth / 2,
@@ -225,7 +200,7 @@ const Draw = ({
 
     useEffect(() => {
         const ctx = canvasRef.current.getContext('2d')
-        ctx.clearRect(0, 0, 848, 615)
+        ctx.clearRect(0, 0, width, height)
         ctx.beginPath();
         figures.forEach(figure => {
             drawFigure(figure, ctx)
@@ -233,7 +208,6 @@ const Draw = ({
 
         document.onkeydown = e => {
             if (e.key === 'Delete' && selected) {
-                // setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
                 deleteFigure(selected)
                 setSelected(false)
             }
@@ -275,8 +249,8 @@ const Draw = ({
                     <div
                         className="table__body-item">
                         <canvas
-                            width="848px"
-                            height="615px"
+                            width={`${width}px`}
+                            height={`${height}px`}
                             onMouseMove={ onMouseMove }
                             onMouseDown={ onMouseDown }
                             onMouseUp={ onMouseUp }

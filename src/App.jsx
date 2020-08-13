@@ -9,7 +9,7 @@ const App = () => {
   return (
     <Provider store={ store }>
       <div>
-        <Draw />
+        <Draw width={848} height={615}/>
       </div>
     </Provider>
 
