@@ -1,37 +1,48 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import Ellipse from '../../components/Ellipse/Ellipse';
 import Rect from '../../components/Rect/Rect';
+import { 
+    deleteFigure,
+    addFigure,
+    setFigures
+} from '../../actions/figure'
 
-const Draw = () => {
+const Draw = ({
+    figures,
+    deleteFigure,
+    addFigure,
+    setFigures
+}) => {
 
     const figureWidth = 80;
     const figureHeight = 50;
     const canvasRef = useRef(null)
     const ellipseRef = useRef(null)
     const rectRef = useRef(null)
-    const [figures, setFigures] = useState([
-        {
-            x: 0,
-            y: 0,
-            type: 'rect'
-        },
-        {
-            x: 100,
-            y: 0,
-            type: 'rect'
-        },
-        {
-            x: 0,
-            y: 100,
-            type: 'ellipse'
-        },
-        {
-            x: 100,
-            y: 100,
-            type: 'rect'
-        },
-    ])
+    // const [figures, setFigures] = useState([
+    //     {
+    //         x: 0,
+    //         y: 0,
+    //         type: 'rect'
+    //     },
+    //     {
+    //         x: 100,
+    //         y: 0,
+    //         type: 'rect'
+    //     },
+    //     {
+    //         x: 0,
+    //         y: 100,
+    //         type: 'ellipse'
+    //     },
+    //     {
+    //         x: 100,
+    //         y: 100,
+    //         type: 'rect'
+    //     },
+    // ])
 
     const [mouse, setMouse] = useState({})
 
@@ -97,7 +108,8 @@ const Draw = () => {
         figures.forEach(figure => {
             if (isCursorInFigure(mouse.x, mouse.y, figure)) {
                 setSelected(figure)
-                setFigures(prevFigures => ([...prevFigures, figure]))
+                // setFigures(prevFigures => ([...prevFigures, figure]))
+                addFigure(figure)
                 isCursorOnAnyFigure = true;
             }
         })
@@ -142,9 +154,10 @@ const Draw = () => {
     const onMouseOver = e => {
         e.stopPropagation()
         if (selected && mouse.down) {
-            setFigures(prevFigures => {
-                return ([...prevFigures, selected])
-            })
+            // setFigures(prevFigures => {
+            //     return ([...prevFigures, selected])
+            // })
+            addFigure(selected)
             setMouse(prevMouse => ({
                 ...prevMouse,
                 out: false
@@ -159,16 +172,17 @@ const Draw = () => {
             y: mouse.y - figureHeight / 2,
             type
         }
-        setFigures(prevFigures => {
-            return ([...prevFigures, draggedFigure])
-        })
+        // setFigures(prevFigures => {
+        //     return ([...prevFigures, draggedFigure])
+        // })
+        addFigure(draggedFigure)
         setSelected(draggedFigure)
     }
 
     const onMouseOut = e => {
         if (mouse.down && selected) {
-            setFigures(prevFigures => (prevFigures.filter(figure => figure !== selected)))
-
+            // setFigures(prevFigures => (prevFigures.filter(figure => figure !== selected)))
+            deleteFigure(selected)
             setMouse(prevMouse => ({
                 ...prevMouse,
                 out: true
@@ -219,7 +233,8 @@ const Draw = () => {
 
         document.onkeydown = e => {
             if (e.key === 'Delete' && selected) {
-                setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
+                // setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
+                deleteFigure(selected)
                 setSelected(false)
             }
         }
@@ -280,7 +295,15 @@ const Draw = () => {
 }
 
 Draw.propTypes = {
-
+    figures: PropTypes.array.isRequired,
+    deleteFigure: PropTypes.func.isRequired,
+    addFigure: PropTypes.func.isRequired,
+    setFigures: PropTypes.func.isRequired,
+    
 }
 
-export default Draw
+const mapStateToProps = state => ({
+    figures: state.figure.figures,
+})
+
+export default connect(mapStateToProps, { deleteFigure, addFigure, setFigures })(Draw)

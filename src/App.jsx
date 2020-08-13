@@ -1,13 +1,18 @@
 import React from 'react';
+import { Provider } from 'react-redux'
+import store from './store'
 import './App.scss';
 import Draw from './containers/Draw/Draw';
 
-  const App = () => {
+const App = () => {
 
   return (
-    <div>
-      <Draw />
-    </div>
+    <Provider store={ store }>
+      <div>
+        <Draw />
+      </div>
+    </Provider>
+
   );
 }
 
