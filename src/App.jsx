@@ -7,7 +7,7 @@ import Square from './components/Square/Square';
 const App = () => {
   const canvasRef = useRef(null)
   const circleRef = useRef(null)
-  // { id: '', type: 'circle', position: }
+  const rectRef = useRef(null)
   const [figures, setFigures] = useState([
     {
       id: uuidv4(),
@@ -39,6 +39,45 @@ const App = () => {
 
   const [selected, setSelected] = useState(false)
 
+  const isCursorInCanvas = (x, y) => {
+    console.log('x', x)
+    console.log('canvasRef.current.left', canvasRef.current.left)
+    return x >= canvasRef.current.offsetLeft && x <= canvasRef.current.offsetLeft + canvasRef.current.width
+      && y >= canvasRef.current.offsetTop && y <= canvasRef.current.offsetTop + canvasRef.current.height
+  }
+
+  const onMouseMoveContent = (e) => {
+    // console.log('mouse.Out', mouse.out)
+    // console.log('selected', selected)
+    if (mouse.out && selected && !isCursorInCanvas(e.pageX, e.pageY)) {
+      switch (selected.type) {
+        case 'circle':
+          circleRef.current.style.top = `${e.pageY - 25}px`
+          circleRef.current.style.left = `${e.pageX - 40}px`
+          break
+        case 'rect':
+          rectRef.current.style.top = `${e.pageY - 25}px`
+          rectRef.current.style.left = `${e.pageX - 40}px`
+          break
+      }
+
+    } else {
+      setMouse(prevMouse => ({
+        ...prevMouse,
+        out: false
+      }))
+    }
+
+  }
+
+  const onKeyPressContent = (e) => {
+    console.log(e.key)
+    if (e.key === 'Delete' && selected) {
+      setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
+      setSelected(false)
+    }
+  }
+
   const onDragStart = (e, type) => {
     console.log(e)
     e.dataTransfer.setData("type", type);
@@ -50,6 +89,7 @@ const App = () => {
   }
 
   const onMouseMove = e => {
+    e.stopPropagation()
     // console.log('x', e.pageX)
 
     const x = e.pageX - canvasRef.current.offsetLeft
@@ -58,6 +98,7 @@ const App = () => {
       ...prevMouse,
       x,
       y,
+      out: false
     }))
 
     if (selected && mouse.down) {
@@ -95,6 +136,7 @@ const App = () => {
   }
 
   const onMouseUp = e => {
+    e.stopPropagation()
     console.log('onMouseUp')
     setMouse(prevMouse => ({ ...prevMouse, down: false }))
   }
@@ -120,14 +162,22 @@ const App = () => {
       ...prevMouse,
       x,
       y,
+      // out: false
     }))
   }
 
   const onMouseOver = e => {
+    console.log('onMouseOver')
+    e.stopPropagation()
     if (selected && mouse.down) {
       setFigures(prevFigures => {
         return ([...prevFigures, selected])
       })
+      setMouse(prevMouse => ({
+        ...prevMouse,
+        out: false
+      }))
+
     }
   }
 
@@ -151,22 +201,11 @@ const App = () => {
   const onMouseOut = e => {
     if (mouse.down && selected) {
       setFigures(prevFigures => (prevFigures.filter(figure => figure !== selected)))
-      
-      // circleRef.current.drag()
 
-      // const event = document.createEvent("CustomEvent");
-      // event.initCustomEvent("dragstart", true, true, null);
-      // event.clientX = circleRef.current.top;
-      // event.clientY = circleRef.current.left;
-      // circleRef.current.dispatchEvent(event);
-
-      // const dataTransfer = new DataTransfer;
-      // dataTransfer.setData("type", 'circle');
-      // circleRef.current.dispatchEvent(new DragEvent('dragstart', { dataTransfer: dataTransfer }));
-
-      // const event = document.createEvent('MouseEvents')
-      // event.initEvent('dragstart', true, false)
-      // circleRef.current.dispatchEvent(event)
+      setMouse(prevMouse => ({
+        ...prevMouse,
+        out: true
+      }))
 
     }
   }
@@ -212,10 +251,25 @@ const App = () => {
       drawFigure(figure)
     })
 
+    document.onkeydown = e => {
+      console.log(e.key)
+      if (e.key === 'Delete' && selected) {
+        setFigures(prevFigures => prevFigures.filter(figure => figure !== selected))
+        setSelected(false)
+      }
+    }
   }, [selected, figures, mouse])
 
   return (
-    <div className="content" onMouseDown={onMouseDownContent} onMouseUp={onMouseUpContent}>
+    <div className="content" onMouseDown={ onMouseDownContent } onMouseUp={ onMouseUpContent } onMouseMove={ onMouseMoveContent }>
+      <div
+        ref={ circleRef }
+        className={ `circle drag-out ${mouse.out && selected.type === 'circle' ? 'active' : ''}` }
+      />
+      <div
+        ref={ rectRef }
+        className={ `square drag-out ${mouse.out && selected.type === 'rect' ? 'active' : ''}` }
+      />
       <div className="table">
         <div className="table__header">
           <div className="table__header-item">
@@ -234,7 +288,7 @@ const App = () => {
                 onDrag={ onDrag }
                 draggable
                 className="circle"
-                ref={ circleRef }
+
                 onClick={ onClick }
               >
 
@@ -261,6 +315,7 @@ const App = () => {
               onDrop={ onDrop }
               ref={ canvasRef }
               className="canvas"
+            // onKeyDown={onKeyPressContent}
             ></canvas>
 
 
